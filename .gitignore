@@ -4,14 +4,13 @@
 /backups/
 /data/
 /reference/
-/wordpress/
 /wp-content/uploads/
-/wp-content/cache/
-/wp-content/upgrade/
 /wp-content/plugins/
 /wp-content/themes/
-!.gitkeep
+/wp-content/cache/
+/wp-content/upgrade/
 *.sql
 *.sql.gz
 *.zip
+*.xml
 .DS_Store

@@ -4,13 +4,12 @@ on:
   push:
     branches: [main, develop]
 jobs:
-  validation:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Check Docker Compose
+      - name: Validate Compose and shell scripts
         run: |
           cp .env.example .env
           docker compose config --quiet
-      - name: Check shell scripts
-        run: bash -n scripts/*.sh
+          bash -n scripts/*.sh

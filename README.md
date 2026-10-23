@@ -1,26 +1,29 @@
-# WDS EHPAD — La Résidence Le Prieuré
+# WDS EHPAD — réseau WordPress Multisite
 
-Projet de remise en service du site WordPress historique. Source SQL et copie HTML disponibles séparément, **hors du dépôt Git**.
+Restauration de quatre sites d'établissements avec une **installation WordPress partagée** : Le Prieuré, Clémenceau, Fensch, Thionvillois.
 
-## Développement local
-Prérequis : Docker Engine + plugin Docker Compose, GNU Make, Bash.
+Objectif : conserver **Visual Composer Starter** comme thème commun et reconstruire chaque site à partir des sources historiques, sans modifier les sauvegardes d'origine.
+
+## Démarrage local
+Prérequis : Docker Engine, Docker Compose v2, GNU Make, Bash.
 
 ```bash
-cp .env.example .env
-# Modifier les mots de passe locaux dans .env
+make init
+# Modifier .env (mots de passe) et ajouter WP_ADMIN_USER, WP_ADMIN_PASSWORD, WP_ADMIN_EMAIL.
 make up
+make network-install
+make network-sites
 ```
 
-Accès local : http://localhost:8080 (port personnalisable dans `.env`).
+Adresse locale : http://localhost:8080 (réseau sous-répertoires). L'environnement utilise MariaDB 10.11, WordPress/PHP 8.3 et WP-CLI. Ce n'est pas une reproduction exacte des anciens serveurs.
 
 ```bash
-make import-db FILE=backups/prieure.sql
-make urls
 make status
 make logs
 make backup-db
+make validate
 ```
 
-**Ne pas pousser le SQL d'origine ni l'archive HTML sur le dépôt public** : ils peuvent contenir des informations personnelles et des données sensibles. Consultez [le guide de restauration](docs/RESTAURATION.md).
+Lire impérativement [docs/RESTAURATION.md](docs/RESTAURATION.md) avant toute importation. **Ne pas importer un dump SQL mono-site directement dans la DB Multisite** : une migration avec remappage est nécessaire.
 
-Branches : `main` stable, `develop` intégration, `feature/*` par pull request.
+Les sauvegardes SQL, HTML, XML, les médias privés et les secrets restent **hors du dépôt public**. `main` reste stable ; changements par pull requests.

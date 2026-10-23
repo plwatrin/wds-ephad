@@ -1,27 +1,40 @@
-# Restauration du site Le Prieuré
+# Migration vers un réseau WordPress Multisite
 
-## Sources connues
-- `prieure.sql` : export SQL de l'ancien WordPress (non versionné).
-- `laresidenceleprieure.fr.zip` : aspiration HTML du site (non versionnée).
-- Ancien WordPress observé dans le HTML : 5.3.20.
-- Ancien thème : Visual Composer Starter ; constructeur de pages WPBakery.
+## Sites
+- Résidence Le Prieuré : SQL + aspiration HTML
+- Résidence Clémenceau : SQL + aspiration HTML
+- Prieuré de la Fensch : SQL + aspiration HTML
+- Prieuré du Thionvillois : export WordPress WXR XML
 
-## Environnement
-Docker Compose fournit WordPress (PHP 8.3), MariaDB 10.11 et WP-CLI. Il s'agit d'un **environnement moderne de reconstruction**, pas d'une reproduction exacte de l'hébergement historique. Certaines anciennes extensions peuvent être incompatibles : les tester au cas par cas.
+Les références source restent locales (répertoire `reference/` ignoré par Git). Les sauvegardes peuvent contenir des données personnelles.
 
-## Mise en route
-1. Copier `.env.example` vers `.env`, remplacer les mots de passe.
-2. `make up` puis ouvrir http://localhost:8080.
-3. Déposer le SQL **localement** dans `backups/prieure.sql`, sans le committer.
-4. `make import-db FILE=backups/prieure.sql`.
-5. `make urls` (script prévu pour le port local par défaut 8080).
-6. Depuis l'archive HTML, récupérer les images utiles et les copier dans `wp-content/uploads` en préservant autant que possible l'arborescence d'origine.
-7. Installer et auditer le thème et les extensions nécessaires avant toute activation.
+## Thème et plugins
+Conserver en priorité **Visual Composer Starter**, avec une seule installation partagée et des options distinctes par site. Les contenus utilisent possiblement **WPBakery Page Builder**, produit distinct de Visual Composer ; vérifier sa version, compatibilité et licence. Ne pas supposer que les fichiers du thème et des plugins sont présents dans l'aspiration HTML.
 
-## Précautions
-- L'import n'a pas encore été exécuté : la compatibilité de ce dump avec MariaDB 10.11 reste à tester.
-- Ne pas committer les sauvegardes SQL, les archives, les uploads privés, les mots de passe ou les données des utilisateurs.
-- Les mots de passe d'origine ne sont pas nécessaires à l'ouverture du site : si besoin, réinitialiser le mot de passe de l'administrateur via WP-CLI.
-- Ne pas exposer un WordPress ancien/non corrigé sur Internet. Le service web est limité à 127.0.0.1.
-- Pour ouvrir depuis une autre machine : tunnel SSH vers le port 8080.
-- Tester en priorité le rendu des pages WPBakery et des formulaires.
+## Création du réseau
+1. `make init`
+2. Modifier les deux mots de passe DB dans `.env`, et ajouter `WP_ADMIN_USER`, `WP_ADMIN_PASSWORD`, `WP_ADMIN_EMAIL`. Réserver ces identifiants à la machine de développement.
+3. `make up`
+4. `make network-install` — réseau local en sous-répertoires
+5. `make network-sites` ; accéder à `http://localhost:8080/wp-admin/network/`.
+
+Le premier site du réseau est créé par WordPress. Il peut être attribué au Prieuré. Pour les trois autres, utiliser `make cli site create --slug=clemenceau --title='Résidence Clémenceau'`, etc. Les commandes sont à exécuter seulement après avoir confirmé le schéma de migration.
+
+## NE PAS importer les anciennes bases directement dans MariaDB réseau
+Chaque ancienne base contient ses tables `wp_*` et ses propres utilisateurs. Les collisions de noms et d'identifiants sont inévitables. Le script mono-site d'import a été retiré.
+
+Procédure future :
+1. Charger chaque dump dans une **base temporaire isolée**, non dans la base multisite.
+2. Recenser les contenus, images, options, menus, identifiants, comptes, shortcodes et données sérialisées.
+3. Migrer chaque établissement dans les tables de son site, en remappant les identifiants et URLs.
+4. Importer le WXR de Thionvillois sur son sous-site (WordPress Importer), vérifier l'accessibilité réelle des médias référencés.
+5. Comparer les pages reconstruites aux captures HTML. Tester formulaires, menus, liens, WPBakery et droits d'accès.
+
+## Sécurité
+Le service Apache n'écoute que sur `127.0.0.1`. Utiliser un tunnel SSH pour l'accès distant. Ne pas exposer une restauration d'anciens plugins à Internet. Aucune sauvegarde, aucun secret et aucune donnée utilisateur ne doivent être commités.
+
+## À valider
+- Les archives source et leur cohérence.
+- La capacité de WPBakery historique à fonctionner avec PHP 8.3 et WordPress actuel.
+- La disponibilité des images de chaque site et les droits/licences des extensions.
+- Les domaines définitifs, HTTPS et architecture de déploiement.
