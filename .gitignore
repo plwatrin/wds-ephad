@@ -1,0 +1,16 @@
+/.env
+/.env.*
+!/.env.example
+/backups/
+/data/
+/reference/
+/wp-content/uploads/
+/wp-content/plugins/
+/wp-content/themes/
+/wp-content/cache/
+/wp-content/upgrade/
+*.sql
+*.sql.gz
+*.zip
+*.xml
+.DS_Store
